@@ -20,7 +20,7 @@ public class SpecialReportsScreen {
             InputValidator.clearScreen();
             displayMenu();
 
-            int choice = InputValidator.getIntInRange("Select an option: ", 0, 3);
+            int choice = InputValidator.getIntInRange("Select an option: ", 0, 4);
 
             switch (choice) {
                 case 1:
@@ -33,14 +33,29 @@ public class SpecialReportsScreen {
                     showUserDiversityScore();
                     break;
                 case 4:
-                    //@TODO - Create report
-//                    showPeakListeningHours();
+                    showPeakListeningHours();
                     break;
                 case 0:
                     running = false;
                     break;
             }
         }
+    }
+
+    private void showPeakListeningHours() {
+        InputValidator.clearScreen();
+        ConsoleColors.printHeader("PEAK LISTENING HOURS REPORT");
+
+        var results = reportsDao.getPeakListeningHours();
+
+        for(ReportResult row : results) {
+            System.out.printf("%d  Plays:%5d  Users:%4d  Avg/User:%.2f%n",
+                    row.getInt("hour_of_day"),
+                    row.getInt("total_plays"),
+                    row.getInt("unique_users"),
+                    row.getDouble("avg_plays_per_user"));
+        }
+        InputValidator.pressEnterToContinue();
     }
 
     private void showUserDiversityScore() {
@@ -62,7 +77,6 @@ public class SpecialReportsScreen {
                     row.getDouble("diversity_score"));
         }
         InputValidator.pressEnterToContinue();
-
     }
 
     private void showMostPlayedAlbumsByGenre() {

@@ -17,6 +17,49 @@ public class ReportsDao {
         this.dataManager = dataManager;
     }
 
+    public List<ReportResult> getPeakListeningHours() {
+        List<ReportResult> results = new ArrayList<>();
+        String query = "SELECT " +
+                "h.hour_of_day, " +
+                "COUNT(ap.play_id) AS total_plays, " +
+                "COUNT(DISTINCT ap.user_id) AS unique_users, " +
+                "ROUND( " +
+                "COUNT(ap.play_id) / NULLIF(COUNT(DISTINCT ap.user_id), 0), " +
+                "2) AS avg_plays_per_user " +
+
+                "FROM ( " +
+                "SELECT 0 AS hour_of_day " +
+                "UNION SELECT 1 " + "UNION SELECT 2 " + "UNION SELECT 3 " + "UNION SELECT 4 " + "UNION SELECT 5 " + "UNION SELECT 6 " +
+                "UNION SELECT 7 " + "UNION SELECT 8 " + "UNION SELECT 9 " + "UNION SELECT 10 " + "UNION SELECT 11 " + "UNION SELECT 12 " +
+                "UNION SELECT 13 " + "UNION SELECT 14 " + "UNION SELECT 15 " + "UNION SELECT 16 " + "UNION SELECT 17 " + "UNION SELECT 18 " +
+                "UNION SELECT 19 " + "UNION SELECT 20 " + "UNION SELECT 21 " + "UNION SELECT 22 " + "UNION SELECT 23 " + ") h " +
+                "LEFT JOIN album_plays ap " +
+                "ON HOUR(ap.played_at) = h.hour_of_day " +
+
+                "GROUP BY h.hour_of_day " +
+                "ORDER BY h.hour_of_day";
+
+        try (Connection connection = dataManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet rs = statement.executeQuery()) {
+
+            while (rs.next()) {
+                ReportResult result = new ReportResult();
+
+                result.addColumn("hour_of_day", rs.getInt("hour_of_day"));
+                result.addColumn("total_plays", rs.getInt("total_plays"));
+                result.addColumn("unique_users", rs.getInt("unique_users"));
+                result.addColumn("avg_plays_per_user", rs.getDouble("avg_plays_per_user"));
+                results.add(result);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error running Peak Listening Hours Report: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return results;
+
+    }
+
     public List<ReportResult> getUserDiversityReport() {
         List<ReportResult> results = new ArrayList<>();
         String query = "SELECT " +
