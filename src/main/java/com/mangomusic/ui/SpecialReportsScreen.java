@@ -20,7 +20,7 @@ public class SpecialReportsScreen {
             InputValidator.clearScreen();
             displayMenu();
 
-            int choice = InputValidator.getIntInRange("Select an option: ", 0, 2);
+            int choice = InputValidator.getIntInRange("Select an option: ", 0, 3);
 
             switch (choice) {
                 case 1:
@@ -30,8 +30,7 @@ public class SpecialReportsScreen {
                     showMostPlayedAlbumsByGenre();
                     break;
                 case 3:
-                    //@TODO - Create report
-//                    showUserDiversityScore();
+                    showUserDiversityScore();
                     break;
                 case 4:
                     //@TODO - Create report
@@ -42,6 +41,28 @@ public class SpecialReportsScreen {
                     break;
             }
         }
+    }
+
+    private void showUserDiversityScore() {
+        InputValidator.clearScreen();
+
+        ConsoleColors.printHeader("USER DIVERSITY REPORT");
+
+        var results = reportsDao.getUserDiversityReport();
+
+
+        for(ReportResult row : results) {
+            System.out.printf("%d %-20s %-10s Plays:%4d Genres:%3d Artists:%3d Score:%8.2f%n",
+                    row.getInt("user_id"),
+                    row.getString("username"),
+                    row.getString("subscription_type"),
+                    row.getInt("total_plays"),
+                    row.getInt("distinct_genres_played"),
+                    row.getInt("distinct_albums_played"),
+                    row.getDouble("diversity_score"));
+        }
+        InputValidator.pressEnterToContinue();
+
     }
 
     private void showMostPlayedAlbumsByGenre() {
