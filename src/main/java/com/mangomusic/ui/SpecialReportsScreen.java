@@ -20,15 +20,14 @@ public class SpecialReportsScreen {
             InputValidator.clearScreen();
             displayMenu();
 
-            int choice = InputValidator.getIntInRange("Select an option: ", 0, 1);
+            int choice = InputValidator.getIntInRange("Select an option: ", 0, 2);
 
             switch (choice) {
                 case 1:
                     showMangoMusicMapped();
                     break;
                 case 2:
-                    //@TODO - Create report
-//                    showMostPlayedAlbumsByGenre();
+                    showMostPlayedAlbumsByGenre();
                     break;
                 case 3:
                     //@TODO - Create report
@@ -43,6 +42,32 @@ public class SpecialReportsScreen {
                     break;
             }
         }
+    }
+
+    private void showMostPlayedAlbumsByGenre() {
+        InputValidator.clearScreen();
+
+        ConsoleColors.printHeader("MOST PLAYED ALBUMS BY GENRE");
+
+        var results = reportsDao.getMostPlayedAlbumsByGenre();
+
+        String currentGenre = "";
+
+        for(ReportResult row : results) {
+            String genre = row.getString("genre");
+
+            if (!genre.equals(currentGenre)) {
+                currentGenre = genre;
+                System.out.println();
+                System.out.println("-----" + genre + "-----");
+            }
+            System.out.printf("#%d %-45s %-35s %5d plays%n",
+                    row.getInt("genre_rank"),
+                    row.getString("album_title"),
+                    row.getString("artist_name"),
+                    row.getInt("play_count"));
+        }
+        InputValidator.pressEnterToContinue();
     }
 
     private void displayMenu() {

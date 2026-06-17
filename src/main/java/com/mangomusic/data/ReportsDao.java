@@ -17,6 +17,67 @@ public class ReportsDao {
         this.dataManager = dataManager;
     }
 
+    public List<ReportResult> getMostPlayedAlbumsByGenre() {
+        List<ReportResult> results =  new ArrayList<>();
+        String query = "SELECT * " +
+                "FROM ( " +
+                "SELECT ar.primary_genre AS genre, " +
+                        "al.title AS album_title, " +
+                        "ar.name AS artist_name, " +
+                        "COUNT(ap.play_id) AS play_count, " +
+
+                        "(SELECT COUNT(*) + 1 " +
+                        "FROM (" +
+                                "SELECT al2.album_id, " +
+                                "COUNT(ap2.play_id) AS play_count " +
+                                "FROM albums al2 " +
+                                "JOIN artists ar2 " +
+                                "ON al2.artist_id = ar2.artist_id " +
+                                "JOIN album_plays ap2 " +
+                                "ON al2.album_id = ap2.album_id " +
+                                "WHERE ar2.primary_genre = ar.primary_genre " +
+                                "GROUP BY al2.album_id " +
+                                "HAVING COUNT(ap2.play_id) > COUNT(ap.play_id)" +
+                            ") ranked" +
+                        ") AS genre_rank " +
+                "FROM albums al " +
+                "JOIN artists ar " +
+                    "ON al.artist_id = ar.artist_id " +
+                "JOIN album_plays ap " +
+                    "ON al.album_id = ap.album_id " +
+
+            "GROUP BY " +
+                "ar.primary_genre, " +
+                "al.album_id, " +
+                "al.title, " +
+                "ar.name " +
+        ") ranked_albums " +
+
+        "WHERE genre_rank <= 5 " +
+        "ORDER BY genre, play_count DESC";
+
+
+            try (Connection connection = dataManager.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(query);
+                 ResultSet rs = statement.executeQuery()) {
+
+                while (rs.next()) {
+                    ReportResult result = new ReportResult();
+
+                    result.addColumn("genre", rs.getString("genre"));
+                    result.addColumn("album_title", rs.getString("album_title"));
+                    result.addColumn("genre_rank", rs.getInt("genre_rank"));
+                    result.addColumn("artist_name", rs.getString("artist_name"));
+                    result.addColumn("play_count", rs.getInt("play_count"));
+                    results.add(result);
+                }
+            } catch (SQLException e) {
+            System.err.println("Error running Most Played Albums by Genre report: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return results;
+    }
+
     public List<ReportResult> getDailyActiveUsersReport() {
         List<ReportResult> results = new ArrayList<>();
         String query = "SELECT " +
